@@ -1,5 +1,4 @@
 import Appbar from "../components/Appbar";
-import { Avatar } from "../components/BlogCard";
 import Loader from "../components/Loader";
 import ProfileCard from "../components/ProfileCard";
 import { useGetProfileData } from "../hooks";

@@ -91,5 +91,5 @@ export const useGetProfileData = () => {
         }
         fetchProfile();
     }, []);
-    return {loading, profile};
+    return {loading, profile: profile ? { ...profile, posts: [] as any[] } : undefined};
 }

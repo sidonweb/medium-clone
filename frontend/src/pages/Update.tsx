@@ -10,7 +10,7 @@ export const Update = () => {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const navigate = useNavigate();
-    const { loading, blog } = useBlog(id);
+    const { blog } = useBlog(id);
     
     useEffect(() => {
         if (blog) {

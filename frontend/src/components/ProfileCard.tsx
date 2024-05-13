@@ -36,7 +36,7 @@ export default function ProfileCard({
                         <div>
                             <button onClick={async () => {
                                 try {
-                                    const response = await axios.delete(`${BACKEND_URL}/api/v1/blog/${id}`,{
+                                    await axios.delete(`${BACKEND_URL}/api/v1/blog/${id}`,{
                                         headers: {
                                             Authorization: `Bearer ${localStorage.getItem("token")}`
                                         }
