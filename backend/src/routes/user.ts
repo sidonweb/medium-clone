@@ -9,8 +9,34 @@ const userRoute = new Hono<{
     Bindings: {
         DATABASE_URL: string,
         JWT_SECRET: string,
+    },
+    Variables: {
+        userId: string
+    
     }
 }>();
+
+
+userRoute.use("/profile", async(c, next) => {
+    const jwttoken =  c.req.header('Authorization');
+    if(!jwttoken){
+        c.status(401);
+        return c.json({message: "Unauthorized"})
+    }
+    const token = jwttoken.split(" ")[1];
+    try {
+        const payload = await verify(token, c.env.JWT_SECRET);
+        console.log("kvjhffi", payload)
+        if(payload){
+            c.set('userId', payload.id);
+            await next();
+        }
+    } catch (error: any) {
+        c.status(401);
+		return c.json({error: error.message})
+    }
+
+} )
 
 userRoute.post('/signup', async (c) => {
     // Connect to Prisma
@@ -30,7 +56,7 @@ userRoute.post('/signup', async (c) => {
             data: {
                 email: body.email,
                 password: body.password,
-                name: body.name || null,
+                name: body.name || "Anonymous",
             }
         });
 
@@ -86,11 +112,40 @@ userRoute.post('/signin', async (c) => {
     } catch (error) {
 
         console.log(error);
-        return c.json({ error: 'Error creating user' });
+        return c.json({ error: 'Error signing in user' });
 
     } finally {
         // Close Prisma connection
         await prisma.$disconnect();
+    }
+});
+
+userRoute.get("/profile", async (c) => {
+    const prisma = new PrismaClient({
+        datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate());
+
+    const userId = c.get('userId');
+
+    try {
+        // Fetch user info along with their blog posts
+        const userProfile = await prisma.user.findUnique({
+            where: {
+                id: userId // Assuming you have the user's ID available in the request context
+            },
+            include: {
+                posts: true // Include all posts related to this user
+            }
+        });
+        // Return the user profile along with their posts
+        return c.json(userProfile);
+    } catch (error) {
+        // Handle errors
+        console.error("Error fetching user profile:", error);
+        c.status(500);
+        c.json({ error: "Internal server error" });
+    } finally {
+        await prisma.$disconnect(); // Disconnect from the Prisma client
     }
 });
 

@@ -43,7 +43,6 @@ blogRoute.post('/', async (c) => {
         return c.json({ error: 'Invalid Request' });
     }
     const userId = c.get('userId');
-    console.log(userId);
     // Connect to Prisma
     const prisma = new PrismaClient({
         datasourceUrl: c.env?.DATABASE_URL,
@@ -105,7 +104,19 @@ blogRoute.get('/bulk', async (c) => {
     }).$extends(withAccelerate());
 
     try {
-        const posts = await prisma.post.findMany();
+        const posts = await prisma.post.findMany({
+            select: {
+                content: true,
+                title: true,
+                id: true,
+                publishedAt: true,
+                author: {
+                    select: {
+                        name: true
+                    }
+                }
+            }
+        });
         return c.json(posts);
     } catch (error) {
         console.log(error);
@@ -123,6 +134,17 @@ blogRoute.get('/:id', async (c) => {
         const blog = await prisma.post.findUnique({
             where: {
                 id: id
+            },
+            select: {
+                id: true,
+                title: true,
+                content: true,
+                publishedAt: true,
+                author: {
+                    select: {
+                        name: true
+                    }
+                }
             }
         });
         return c.json(blog);
@@ -130,7 +152,60 @@ blogRoute.get('/:id', async (c) => {
         console.log(error);
         return c.json({ error: 'Error fetching post' });
     }
-})
+});
+
+blogRoute.delete('/:id', async (c) => {
+    const id = c.req.param('id');
+    const prisma = new PrismaClient({
+        datasourceUrl: c.env?.DATABASE_URL,
+    }).$extends(withAccelerate());
+
+    console.log(id)
+
+    try {
+        const post = await prisma.post.delete({
+            where: {
+                id: id
+            }
+        });
+        return c.json(post);
+    } catch (error) {
+        console.log(error);
+        return c.json({ error: 'Error deleting post' });
+    }
+});
+
+blogRoute.patch('/:id', async (c) => {
+    const id = c.req.param('id');
+    const body = await c.req.json();
+    const { success } = updatePostSchema.safeParse(body);
+    if (!success) {
+        return c.json({ error: 'Invalid Request' });
+    }
+    // Connect to Prisma
+    const prisma = new PrismaClient({
+        datasourceUrl: c.env?.DATABASE_URL,
+    }).$extends(withAccelerate());
+
+    try {
+        const post = await prisma.post.update({
+            where: {
+                id: id
+            },
+            data: {
+                title: body.title,
+                content: body.content,
+            }
+        });
+
+        return c.json(post);
+
+    } catch (error) {
+        console.log(error);
+        return c.json({ error: 'Error updating post' });
+    }
+});
+
 
 
 
