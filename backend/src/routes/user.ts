@@ -26,7 +26,6 @@ userRoute.use("/profile", async(c, next) => {
     const token = jwttoken.split(" ")[1];
     try {
         const payload = await verify(token, c.env.JWT_SECRET);
-        console.log("kvjhffi", payload)
         if(payload){
             c.set('userId', payload.id);
             await next();

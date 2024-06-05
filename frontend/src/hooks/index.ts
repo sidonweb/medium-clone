@@ -14,7 +14,7 @@ export interface Blog {
 
 export interface Profile {
     name: string;
-    blogs: Omit<Blog, "author">[];
+    posts: Omit<Blog, "author">[];
 }
 
 export const useBlogs = () => {
@@ -91,5 +91,6 @@ export const useGetProfileData = () => {
         }
         fetchProfile();
     }, []);
-    return {loading, profile: profile ? { ...profile, posts: [] as any[] } : undefined};
+    // return {loading, profile: profile ? { ...profile, posts: [] as any[] } : undefined};
+    return {loading, profile};
 }

@@ -11,6 +11,7 @@ export default function Profile(){
             <Loader />
         </div>
     }
+
     return (
         <div>
             <Appbar context="default" />
